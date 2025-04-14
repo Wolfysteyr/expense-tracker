@@ -29,6 +29,7 @@
 <body>
     <div class="pie-chart-container" id="pie-chart-container" style="width: 30%; float: left; margin-top: 20px;">
         <canvas id="expensePieChart"></canvas>
+        <button id="resetButton" hidden=true>Reset</button>
     </div>
 
     <div class="container">
@@ -51,10 +52,10 @@
 
 
         <hr>
-        <form method="GET" action="{{ route('expenses.index') }}">
+        <form id="filterForm" method="GET" action="{{ route('expenses.index') }}">
             @csrf
-            <label for="category"> Filter by Category</label>
-            <select name="category" id="category-select" onchange="this.form.submit()">
+            <!-- <label for="category"> Filter by Category</label> -->
+            <select name="category" id="category-select" onchange="this.form.submit()" hidden=true>
                 <option value='0'>All Categories</option>
                 @foreach ($categories as $category)
                     <option value="{{ $category->id }}" {{ request('category') == $category->id ? 'selected' : '' }}>
@@ -62,6 +63,8 @@
                     </option>
                 @endforeach
             </select>
+
+            <!-- <input type="text" name="category-select" id="category-select" value="0" hidden=true> -->
 
         </form>
 
@@ -128,13 +131,30 @@
                                     }
                                 }
                             }
+                        },
+
+                        onClick: (evt, elements, chart) => {
+                            if (elements.length > 0) {
+                                const index = elements[0].index;
+                                console.log('Clicked value:', index);
+
+
+                                categorySelect.value = index;
+                                document.getElementById('filterForm').submit();  
+                                
+                            }
                         }
                     }
                 });
 
+
+
             } else {
+                document.getElementById('resetButton').hidden = false;
+
                 const labels = Object.keys(nameTotals);
                 const data = Object.values(nameTotals);
+
                 // Create the pie chart
                 new Chart(ctx, {
                     type: "pie",
@@ -166,7 +186,14 @@
                         }
                     }
                 });
+                document.getElementById('resetButton').addEventListener('click', () => {
+                // Reset the select dropdown
+                categorySelect.value = '0';
+                document.getElementById('filterForm').submit();  
 
+
+
+                });
             }
         };
 
